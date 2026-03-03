@@ -20,6 +20,8 @@ export default function ContactPage() {
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   function handleServiceToggle(service: string) {
     setFormData((prev) => ({
@@ -30,25 +32,35 @@ export default function ContactPage() {
     }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitting(true);
+    setError("");
 
-    // Build mailto link with form data
-    const subject = `Screening Enquiry from ${formData.name}`;
-    const body = [
-      `Name: ${formData.name}`,
-      `Email: ${formData.email}`,
-      `Mobile: ${formData.mobile}`,
-      formData.sentinelNo ? `Sentinel No: ${formData.sentinelNo}` : "",
-      `\nServices requested:`,
-      ...formData.services.map((s) => `  - ${s}`),
-      formData.message ? `\nAdditional message:\n${formData.message}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
+    try {
+      const response = await fetch("https://formspree.io/f/xpqjvzjk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          mobile: formData.mobile,
+          sentinelNo: formData.sentinelNo || "N/A",
+          services: formData.services.join(", "),
+          message: formData.message || "N/A",
+        }),
+      });
 
-    window.location.href = `mailto:claire.lim@meditestscreening.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setSubmitted(true);
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        setError("Something went wrong. Please try again or call us on 07786 136470.");
+      }
+    } catch {
+      setError("Something went wrong. Please try again or call us on 07786 136470.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -79,8 +91,8 @@ export default function ContactPage() {
                     Enquiry Sent!
                   </h3>
                   <p className="text-green-700">
-                    Your email client should have opened with your enquiry details.
-                    We&apos;ll get back to you as soon as possible.
+                    Thank you for your enquiry. We&apos;ll get back to you as soon
+                    as possible to arrange your appointment.
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}
@@ -205,12 +217,20 @@ export default function ContactPage() {
                     />
                   </div>
 
+                  {/* Error message */}
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                      {error}
+                    </div>
+                  )}
+
                   {/* Submit button */}
                   <button
                     type="submit"
-                    className="w-full bg-accent hover:bg-accent-hover text-white text-lg px-8 py-4 rounded-lg font-semibold transition-colors"
+                    disabled={submitting}
+                    className="w-full bg-accent hover:bg-accent-hover disabled:bg-gray-400 text-white text-lg px-8 py-4 rounded-lg font-semibold transition-colors"
                   >
-                    Send Enquiry
+                    {submitting ? "Sending..." : "Send Enquiry"}
                   </button>
                 </form>
               )}
