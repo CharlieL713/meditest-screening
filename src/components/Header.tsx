@@ -23,15 +23,15 @@ export default function Header() {
 
       {/* Main navigation (white background so logo shows properly) */}
       <div className="bg-white border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-8 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
               src="/logo.png"
               alt="Meditest Screening"
-              width={200}
-              height={60}
-              className="h-12 w-auto"
+              width={450}
+              height={135}
+              className="h-36 w-auto"
               priority
             />
           </Link>
